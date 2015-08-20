@@ -83,7 +83,8 @@ PHP_METHOD(Edge_Controller, get)
             efree(model_class_name);
             zval_ptr_dtor(&arg);
             
-            if(!Z_BVAL_P(ret)){
+            if(!Z_BVAL_P(ret))
+            {
                 RETURN_ZVAL(ret, 1, 1);
             }
 
@@ -113,7 +114,6 @@ PHP_METHOD(Edge_Controller, get)
 
 PHP_METHOD(Edge_Controller, check_login)
 {
-
     zval *chktype, *uin, *key;
     if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zzz", &chktype, &uin, &key) == FAILURE)
     {
@@ -149,25 +149,14 @@ PHP_METHOD(Edge_Controller, check_login)
     
     zval_ptr_dtor(&function_name);
     zval_ptr_dtor(&login_obj);
-    //php_var_dump(&uin, 1 TSRMLS_CC); 
 
     zval *fret;
     MAKE_STD_ZVAL(fret);
     ZVAL_STRING(fret, Z_STRVAL_P(uin), 1);
-    //php_var_dump(&fret, 1 TSRMLS_CC);
 
     array_init(return_value);
     add_assoc_string(return_value, "nickname", Z_STRVAL_P(fret), 1);
     zval_ptr_dtor(&fret);
-    //RETURN_ZVAL(fret, 1, 1);
-    /*
-
-    char *tuin;
-    array_init(return_value);
-    add_assoc_long(return_value, "uin", 610917472);
-    */
-
-
 }
 
 
@@ -282,7 +271,5 @@ EDGE_STARTUP_FUNCTION(controller)
     zend_class_entry tmp_ce;
     INIT_CLASS_ENTRY(tmp_ce, "Edge_Controller", edge_controller_methods);
     edge_controller_ce = zend_register_internal_class(&tmp_ce TSRMLS_CC);
-
-    //zend_declare_property_null(edge_controller_ce, ZEND_STRL("model"), ZEND_ACC_PUBLIC TSRMLS_DC);
     return SUCCESS; 
 }
