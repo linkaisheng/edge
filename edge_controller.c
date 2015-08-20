@@ -77,11 +77,16 @@ PHP_METHOD(Edge_Controller, get)
             controller_prefix = estrndup(ce->name, ce->name_length - strlen("Controller"));
             char *model_class_name;
             spprintf(&model_class_name, 0, "%s", controller_prefix);
-            //spprintf(&model_class_name, 0, "%s%s", controller_prefix, "Model");
             MAKE_STD_ZVAL(arg);
             ZVAL_STRING(arg, model_class_name, 1);
             zend_call_method_with_1_params(&getThis(), edge_controller_ce, NULL, "model", &ret, arg);
-             
+            efree(model_class_name);
+            zval_ptr_dtor(&arg);
+            
+            if(!Z_BVAL_P(ret)){
+                RETURN_ZVAL(ret, 1, 1);
+            }
+
             zend_class_entry *model_ce;
             model_ce = Z_OBJCE_P(ret);
               
@@ -90,22 +95,16 @@ PHP_METHOD(Edge_Controller, get)
             {
                  zval *cretval;
                  zend_call_method(&ret, model_ce, NULL, "__construct", strlen("__construct"), &cretval, 0, NULL, NULL TSRMLS_CC);
-                 //php_var_dump(&cretval, 1 TSRMLS_CC);
-                 //Z_ADDREF_P(cretval);
                  zval_ptr_dtor(&cretval);
             }
             
             efree(controller_prefix);
-            efree(model_class_name);
-            zval_ptr_dtor(&arg);
             zval_ptr_dtor(&data);
             RETURN_ZVAL(ret, 1, 1);
-            
-        }else if(strncmp("response", name, nlen) == 0)
-        {
-            printf("response\n");
-        }else if(strncmp("login", name, nlen) == 0)
-        {
+        }else if(strncmp("response", name, nlen) == 0){
+
+        }else if(strncmp("login", name, nlen) == 0){
+        
         }
 
     }
@@ -207,11 +206,6 @@ PHP_METHOD(Edge_Controller, model)
         RETURN_ZVAL(*z_obj, 1, 0);
     }
     
-    zval *z_model_name;
-    MAKE_STD_ZVAL(z_model_name);
-    //ZVAL_STRING(z_model_name, model_name, 1);
-    ZVAL_STRING(z_model_name, model_class_name, 1);
-
     zval *config;
     zval *config_data;
     config = zend_read_static_property(edge_core_ce, ZEND_STRL("config"), 1 TSRMLS_DC);
@@ -223,16 +217,24 @@ PHP_METHOD(Edge_Controller, model)
         RETURN_FALSE;
     }
     
+    zval *z_model_name;
+    MAKE_STD_ZVAL(z_model_name);
+    ZVAL_STRING(z_model_name, model_class_name, 1);
+
     zval *loader;
     zval *ret;
     loader = zend_read_static_property(edge_core_ce, ZEND_STRL("loader"), 1 TSRMLS_DC);
     zend_call_method_with_2_params(&loader, Z_OBJCE_P(loader), NULL, "autoload", &ret, z_model_name, *models_home_pp);
+    zval_ptr_dtor(&z_model_name);
     if(!Z_BVAL_P(ret))
     {
-        printf("model auto load error \n");
-        zval_ptr_dtor(&z_model_name);
+        char *errorMsg;
+        int errorMsgLen;
+        errorMsgLen = spprintf(&errorMsg, 0, "[ERROR]model %s%s load error\n", Z_STRVAL_PP(models_home_pp), model_class_name);
+        PHPWRITE(errorMsg, errorMsgLen);
         zval_ptr_dtor(&ret);
-        //zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "class model %s does not exist", model_name);
+        efree(model_class_name);
+        efree(errorMsg);
         RETURN_FALSE;
     }
     zval_ptr_dtor(&ret);
@@ -240,13 +242,13 @@ PHP_METHOD(Edge_Controller, model)
     zend_class_entry **model_ce;
     if(zend_lookup_class(model_class_name, class_name_len, &model_ce TSRMLS_CC) == FAILURE)
     {
-        printf("Class %s does not exist\n", model_class_name);
-        //zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Class %s does not exist", model_name);
-        zval_ptr_dtor(&ret);
-        zval_ptr_dtor(&z_model_name);
+        char *errorMsg;
+        int errorMsgLen;
+        errorMsgLen = spprintf(&errorMsg, 0, "[ERROR]Model class %s does not exist\n", model_class_name);
+        PHPWRITE(errorMsg, errorMsgLen);
+        efree(model_class_name);
         RETURN_FALSE;
     }
-    zval_ptr_dtor(&z_model_name);
 
     zval *model_obj;
     MAKE_STD_ZVAL(model_obj);
