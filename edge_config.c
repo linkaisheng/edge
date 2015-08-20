@@ -75,24 +75,28 @@ static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC)
         if(zend_hash_get_current_key_ex(src, &key, &keylen, &idx, 0, NULL) == HASH_KEY_IS_LONG)
         {
             zval *tmp;
-            if(zend_hash_get_current_data(src, (void **)&ppzval) == FAILURE){
+            if(zend_hash_get_current_data(src, (void **)&ppzval) == FAILURE)
+            {
                 continue;
             }
 
             tmp = edge_ini_array_copy(*ppzval TSRMLS_CC);
 
-            if(tmp){
+            if(tmp)
+            {
                 zend_hash_index_update(dst, idx, (void **)&tmp, sizeof(zval *), NULL);
             }
         }else{
             zval *tmp;
-            if(zend_hash_get_current_data(src, (void **)&ppzval) == FAILURE){
+            if(zend_hash_get_current_data(src, (void **)&ppzval) == FAILURE)
+            {
                 continue;
             }
 
             tmp = edge_ini_array_copy(*ppzval TSRMLS_CC);
 
-            if(tmp){
+            if(tmp)
+            {
                 zend_hash_update(dst, key, keylen, (void **)&tmp, sizeof(zval *), NULL);
             }
         }
@@ -101,7 +105,7 @@ static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC)
 
 }
 
-static void yaf_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC) {
+static void edge_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC) {
 	zval **ppzval, *tmp;
 	char *key;
 	ulong idx;
@@ -111,20 +115,24 @@ static void yaf_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC) {
 			zend_hash_has_more_elements(src) == SUCCESS;
 			zend_hash_move_forward(src)) {
 
-		if (zend_hash_get_current_key_ex(src, &key, &keylen, &idx, 0, NULL) == HASH_KEY_IS_LONG) {
-			if (zend_hash_get_current_data(src, (void**)&ppzval) == FAILURE) {
+		if (zend_hash_get_current_key_ex(src, &key, &keylen, &idx, 0, NULL) == HASH_KEY_IS_LONG) 
+        {
+			if (zend_hash_get_current_data(src, (void**)&ppzval) == FAILURE) 
+            {
 				continue;
 			}
 
-			tmp = yaf_config_ini_zval_losable(*ppzval TSRMLS_CC);
+			tmp = edge_config_ini_zval_losable(*ppzval TSRMLS_CC);
 			zend_hash_index_update(ldst, idx, (void **)&tmp, sizeof(zval *), NULL);
 
-		} else {
-			if (zend_hash_get_current_data(src, (void**)&ppzval) == FAILURE) {
+		} else 
+        {
+			if (zend_hash_get_current_data(src, (void**)&ppzval) == FAILURE) 
+            {
 				continue;
 			}
 
-			tmp = yaf_config_ini_zval_losable(*ppzval TSRMLS_CC);
+			tmp = edge_config_ini_zval_losable(*ppzval TSRMLS_CC);
 			zend_hash_update(ldst, key, keylen, (void **)&tmp, sizeof(zval *), NULL);
 		}
 	}
@@ -184,57 +192,18 @@ static void edge_config_by_persistent(zval *filename, zval *obj TSRMLS_DC)
             
             if(!edge_ini_modify(filename, ctime))
             {
-                /*
-                zval *config_cache_copy;
-                MAKE_STD_ZVAL(config_cache_copy);
-                array_init(config_cache_copy);
-                edge_config_copy(Z_ARRVAL_P(config_cache_copy), (*config_cache)->config TSRMLS_DC);
-                add_property_zval_ex(obj, ZEND_STRS("_data"), config_cache_copy);
-                */
-
                 zval *props;
                 MAKE_STD_ZVAL(props);
                 array_init(props);
-                yaf_config_copy_losable(Z_ARRVAL_P(props), (*config_cache)->config TSRMLS_CC);
+                edge_config_copy_losable(Z_ARRVAL_P(props), (*config_cache)->config TSRMLS_CC);
                 add_property_zval_ex(obj, ZEND_STRS("_data"), props);
-                //Z_SET_REFCOUNT_P(config_cache_copy, 0);
-                //zend_update_property(edge_config_ce, obj,  ZEND_STRL("t_config_config"), config_cache_copy TSRMLS_CC);
-                //add_property_zval_ex(obj, ZEND_STRS("_data"), config_cache_copy);
-                //php_var_dump(&config_cache_copy, 1 TSRMLS_CC);
-                //zval_ptr_dtor(&config_cache_copy);
-                //edge_config_copy(Z_ARRVAL_P(config_cache_copy), Z_ARRVAL_P((*config_cache)->config) TSRMLS_DC);
-                //php_var_dump(&config_cache_copy, 1 TSRMLS_CC);
-                //PHPWRITE("noneedchange",strlen("noneedchange"));
-                
-        
-                /*          
-                _config_data = (zval *) emalloc(sizeof(zval));
-                INIT_PZVAL(_config_data);
-                Z_TYPE_P(_config_data) = IS_ARRAY;
-                _config_data->value.ht = (*config_cache)->config;
-                add_property_zval_ex(obj, ZEND_STRS("_data"), _config_data);
-                */
-                
-                
-                /* 
-                HashTable *ht_target;
-                ALLOC_HASHTABLE(ht_target);
-                zend_hash_init(ht_target, zend_hash_num_elements((*config_cache)->config), NULL, ZVAL_PTR_DTOR, 0);
-                zend_hash_copy(ht_target, (*config_cache)->config, (copy_ctor_func_t) zval_add_ref, NULL, sizeof(zval *));
-                */
-               // add_property_zval_ex(obj, ZEND_STRS("_data"), _config_data);
-                
-                //php_var_dump(&_config_data, 1 TSRMLS_CC);
-                //efree(_config_data);
             }else{
-                //PHPWRITE("needchange",strlen("needchange"));
                 edge_config_persistent(filename, obj TSRMLS_CC);
             }
         }else{
             edge_config_persistent(filename, obj TSRMLS_CC);
         }
         efree(key);
-        //PHPWRITE("edge_config_by_persistent",strlen("edge_config_by_persistent"));
     }
     
 }
@@ -273,7 +242,7 @@ zval *edge_ini_array_copy(zval *zv TSRMLS_DC)
     return ret;
 }
 
-static zval * yaf_config_ini_zval_losable(zval *zvalue TSRMLS_DC) {
+static zval * edge_config_ini_zval_losable(zval *zvalue TSRMLS_DC) {
 	zval *ret;
 	MAKE_STD_ZVAL(ret);
 	switch (zvalue->type) {
@@ -293,7 +262,7 @@ static zval * yaf_config_ini_zval_losable(zval *zvalue TSRMLS_DC) {
 		case IS_CONSTANT_ARRAY: {
 			HashTable *original_ht = zvalue->value.ht;
 			array_init(ret);
-			yaf_config_copy_losable(Z_ARRVAL_P(ret), original_ht TSRMLS_CC);
+			edge_config_copy_losable(Z_ARRVAL_P(ret), original_ht TSRMLS_CC);
 		}
 			break;
 	}
@@ -335,23 +304,14 @@ zval * get_config_instance(char *config_path TSRMLS_DC)
     fileType = config_path + strlen(config_path) -3; 
     if(strcasecmp(fileType, "ini") == 0)
     {   
-       // edge_config_persistent(zconfig, config_instance);
         /*persistent in here*/
-          
         if(!EDGE_G(configs))
         {   
-           // PHPWRITE("nby", strlen("nby"));
             edge_config_persistent(zconfig, config_instance TSRMLS_CC);
-           // PHPWRITE("nbye", strlen("nbye"));
         }else{
-           // PHPWRITE("by", strlen("by"));
             edge_config_by_persistent(zconfig, config_instance TSRMLS_CC);
-           // PHPWRITE("bye", strlen("bye"));
         } 
-    }else{
-        //throw some error here..
-        printf("config file format error\n");
-    }   
+    }  
     zend_update_static_property(edge_config_ce, ZEND_STRL("t_instance"), config_instance);
     zval_ptr_dtor(&zconfig);
     return config_instance;
@@ -378,15 +338,12 @@ PHP_METHOD(Edge_Config, __construct)
         fileType = Z_STRVAL_P(_data) + Z_STRLEN_P(_data) -3;
         if(strcasecmp(fileType, "ini") == 0)
         {
-            //edge_config_persistent(_data, getThis());
             /*persistent in here*/
             if(!EDGE_G(configs))
             {
-                PHPWRITE("edge_config_persistent", strlen("edge_config_persistent"));
                 edge_config_persistent(_data, getThis());
             }else
             {
-                PHPWRITE("edge_config_by_persistent", strlen("edge_config_by_persistent"));
                 edge_config_by_persistent(_data, getThis());
             }
 
