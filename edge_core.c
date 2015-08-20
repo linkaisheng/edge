@@ -121,9 +121,7 @@ PHP_METHOD(Edge_Core, reg)
 
 PHP_METHOD(Edge_Core, bootstrap)
 {
-    
     zval *action_ret =NULL;
-
     zval *_config;
     zval *_router;
     zval *_loader;
@@ -165,8 +163,16 @@ PHP_METHOD(Edge_Core, bootstrap)
     MAKE_STD_ZVAL(z_controller_file);
     ZVAL_STRING(z_controller_file, controller_file, 1);
     zend_call_method_with_2_params(&_loader, Z_OBJCE_P(_loader), NULL, "autoload", &ret, z_controller_file, *ppzval); 
+    
     efree(controller_file);
     zval_ptr_dtor(&z_controller_file);
+
+    if(!Z_BVAL_P(ret)){
+        char *errorMsg = "Request path error\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
+        zval_ptr_dtor(&ret);
+        RETURN_FALSE;
+    }
     zval_ptr_dtor(&ret);
 
     zend_class_entry **ce = NULL;
@@ -175,60 +181,60 @@ PHP_METHOD(Edge_Core, bootstrap)
     int class_len;
     class_len = spprintf(&class_name, 0, "%s%s", Z_STRVAL_PP(_controller), "controller");
     class_lowercase = zend_str_tolower_dup(class_name, class_len);
-    if(zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) == FAILURE)
-    {
+    if(zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) == FAILURE || !ce){
         //throw error with controller error
-        printf("%s\n", class_name);
+        char *errorMsg = "Can't find effective controller class name\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
+        efree(class_name);
+        efree(class_lowercase);
         RETURN_FALSE;
-    }else{
-        //printf("success load = %s\n", class_name);
     }
-    if(!ce){
-        printf("ce error\n");
-        RETURN_FALSE;
-    }else{
-        zval *controller_ce;
-        MAKE_STD_ZVAL(controller_ce);
-        object_init_ex(controller_ce, *ce);
-
-        zval **_action;
-        zval **mfptr;
-        char *method_name;
-        char *method_lowercase_name;
-        int method_len;
-        if(zend_hash_find(Z_ARRVAL_P(dispathInfo), "action", strlen("action")+1, (void **)&_action) == FAILURE)
-        {
-            //throw error with controller error
-            RETURN_FALSE;
-        }
-        method_len = spprintf(&method_name, 0, "%s%s", Z_STRVAL_PP(_action), "Action");
-        method_lowercase_name = zend_str_tolower_dup(method_name, method_len);
-
-        if(zend_hash_find(&((*ce)->function_table), method_lowercase_name, method_len+1, (void **)&mfptr) == FAILURE)
-        {
-           // printf("action function find error\n");
-            RETURN_FALSE;
-        }else
-        {
-            uint count = 0;
-            zval ***call_args = NULL;
-            
-            zval *func_name;
-            MAKE_STD_ZVAL(func_name);
-            ZVAL_STRINGL(func_name, method_lowercase_name, method_len, 1);
-            //call_user_function_ex(&((*ce)->function_table), &controller_ce, func_name, &action_ret, count, call_args,0, NULL TSRMLS_CC);
-            //zend_call_method_with_0_params(&controller_ce, *ce, NULL, method_lowercase_name, &action_ret);
-            zend_call_method(&controller_ce, *ce, NULL, method_lowercase_name, method_len, &action_ret, 0, NULL, NULL TSRMLS_CC);
-
-            zval_ptr_dtor(&func_name);
-        }
-        efree(method_name);
-        efree(method_lowercase_name);
-        zval_ptr_dtor(&controller_ce);
-    }
-    
     efree(class_name);
     efree(class_lowercase);
+
+    zval *controller_ce;
+    MAKE_STD_ZVAL(controller_ce);
+    object_init_ex(controller_ce, *ce);
+
+    zval **_action;
+    zval **mfptr;
+    char *method_name;
+    char *method_lowercase_name;
+    int method_len;
+    if(zend_hash_find(Z_ARRVAL_P(dispathInfo), "action", strlen("action")+1, (void **)&_action) == FAILURE)
+    {
+        char *errorMsg = "Internal error,action path error\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
+        zval_ptr_dtor(&controller_ce);
+        RETURN_FALSE;
+    }
+    method_len = spprintf(&method_name, 0, "%s%s", Z_STRVAL_PP(_action), "Action");
+    method_lowercase_name = zend_str_tolower_dup(method_name, method_len);
+
+    if(zend_hash_find(&((*ce)->function_table), method_lowercase_name, method_len+1, (void **)&mfptr) == FAILURE)
+    {
+        char *errorMsg = "Can't find effective action name\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
+        zval_ptr_dtor(&controller_ce);
+        efree(method_name);
+        efree(method_lowercase_name);
+        RETURN_FALSE;
+    }else
+    {
+        uint count = 0;
+        zval ***call_args = NULL;
+
+        zval *func_name;
+        MAKE_STD_ZVAL(func_name);
+        ZVAL_STRINGL(func_name, method_lowercase_name, method_len, 1);
+        zend_call_method(&controller_ce, *ce, NULL, method_lowercase_name, method_len, &action_ret, 0, NULL, NULL TSRMLS_CC);
+
+        zval_ptr_dtor(&func_name);
+    }
+    efree(method_name);
+    efree(method_lowercase_name);
+    zval_ptr_dtor(&controller_ce);
+
     RETURN_ZVAL(action_ret, 1, 1);
 }
 
