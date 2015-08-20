@@ -48,15 +48,12 @@ PHP_METHOD(Edge_Core, __construct)
     int clen;
     if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &config_path, &clen) == FAILURE)
     {
-        //throw some error..
-        printf("config file is empty");
         RETURN_FALSE;
     }
      
     //set root path
     set_root_path(config_path);
     spprintf(&EDGE_G(config_path), 0, "%s", config_path);
-    
     
     //initialize config 
     
@@ -110,12 +107,8 @@ PHP_METHOD(Edge_Core, reg)
     *(tmp) = *(value);
     zval_copy_ctor(tmp);
     
-    //ZVAL_ZVAL(tmp, value, 1 , 0);
-    
     zend_hash_update(Z_ARRVAL_P(EDGE_G(regs)), key, klen+1, (void **)&tmp, sizeof(zval *), NULL);
     zval_ptr_dtor(&tmp);
-    //zend_hash_update(Z_ARRVAL_P(EDGE_G(regs)), key, klen+1, (void **)&value, sizeof(zval *), NULL);
-    //Z_ADDREF_P(value);
     RETURN_NULL();
 }
 
