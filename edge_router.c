@@ -4,8 +4,6 @@
 
 #include "php.h"
 #include "php_ini.h"
-//#include "Zend/zend_interfaces.h"
-
 #include "php_edge.h"
 #include "edge_router.h"
 #include "edge_config.h"
@@ -33,7 +31,6 @@ zval * edge_request_query(int type, char *name)
             {
                 zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC);
             }
-           // rdata = &PG(http_globals)[type];
             (void)zend_hash_find(&EG(symbol_table), ZEND_STRS("_SERVER"), (void **)&rdata);
         default:
             break;
@@ -109,8 +106,9 @@ static void dispatch(zval *obj)
     if(Z_TYPE_P(path_info) == IS_NULL)
     {
         //throw error here..
+        char *errorMsg = "path_infi error\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
         zval_ptr_dtor(&path_info);
-        printf("path_info error");
         return ;
     }
     char *path_info_string;
@@ -119,8 +117,6 @@ static void dispatch(zval *obj)
     char *delim = "/";
     char *jt = NULL;
     int offset = 1;
-    //path_info_string = Z_STRVAL_P(path_info);
-    //spprintf(&path_info_string, 0, "%s", Z_STRVAL_P(path_info));
     path_info_string = estrndup(Z_STRVAL_P(path_info), Z_STRLEN_P(path_info));
     if((jt = php_strtok_r(path_info_string, delim, &ptr)) != NULL)
     {
