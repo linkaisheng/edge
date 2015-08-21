@@ -4,7 +4,6 @@
 
 #include "php.h"
 #include "php_ini.h"
-
 #include "php_edge.h"
 #include "edge_config.h"
 #include "edge_loader.h"
@@ -16,7 +15,6 @@ zend_function_entry edge_loader_methods[] = {
     PHP_ME(Edge_Loader, autoload, NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
-
 
 int static edge_register_autoload(zval *loader, const char *fname)
 {
@@ -123,7 +121,6 @@ int  edge_file_include(char *file_path)
     return 0;
 }
 
-
 zval * get_loader_instance()
 {
     zval* loader_instance;
@@ -137,7 +134,6 @@ zval * get_loader_instance()
 
     return loader_instance;
 }
-
 
 PHP_METHOD(Edge_Loader, __construct)
 {
@@ -237,7 +233,6 @@ PHP_METHOD(Edge_Loader, autoload)
         ZVAL_FALSE(ret);
         RETURN_ZVAL(ret, 1, 1);
     }
-    
 
     if(!edge_file_include(include_file_path))
     {
@@ -261,9 +256,7 @@ EDGE_STARTUP_FUNCTION(loader)
     zend_class_entry tmp_ce;
     INIT_CLASS_ENTRY(tmp_ce, "Edge_Loader", edge_loader_methods);
     edge_loader_ce = zend_register_internal_class(&tmp_ce TSRMLS_CC);
-
     zend_declare_property_string(edge_loader_ce, ZEND_STRL(LOADER_DEFAULT_LIB_PATH), "IfLib", ZEND_ACC_PUBLIC TSRMLS_DC);
     zend_declare_property_string(edge_loader_ce, ZEND_STRL(LOADER_DEFAULT_LIB_PREFIX), "If", ZEND_ACC_PUBLIC TSRMLS_DC);
-
     return SUCCESS;
 }
