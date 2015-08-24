@@ -88,17 +88,6 @@ PHP_METHOD(Edge_Controller, get)
                 RETURN_ZVAL(ret, 1, 1);
             }
 
-            zend_class_entry *model_ce;
-            model_ce = Z_OBJCE_P(ret);
-              
-            zval **cfptr;
-            if(zend_hash_find(&((model_ce)->function_table), "__construct", strlen("__construct")+1, (void **)&cfptr) == SUCCESS)
-            {
-                 zval *cretval;
-                 zend_call_method(&ret, model_ce, NULL, "__construct", strlen("__construct"), &cretval, 0, NULL, NULL TSRMLS_CC);
-                 zval_ptr_dtor(&cretval);
-            }
-            
             efree(controller_prefix);
             zval_ptr_dtor(&data);
             RETURN_ZVAL(ret, 1, 1);
@@ -242,6 +231,15 @@ PHP_METHOD(Edge_Controller, model)
     zval *model_obj;
     MAKE_STD_ZVAL(model_obj);
     object_init_ex(model_obj, *model_ce);
+
+    zval **cfptr;
+    if(zend_hash_find(&((*model_ce)->function_table), "__construct", strlen("__construct")+1, (void **)&cfptr) == SUCCESS)
+    {
+        zval *cretval;
+        zend_call_method(&model_obj, *model_ce, NULL, "__construct", strlen("__construct"), &cretval, 0, NULL, NULL TSRMLS_CC);
+        zval_ptr_dtor(&cretval);
+    }
+
     zend_hash_update(Z_ARRVAL_P(EDGE_G(regs)), model_class_name, class_name_len+1, (void **)&model_obj, sizeof(zval *), NULL);
 
     efree(model_class_name);
