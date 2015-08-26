@@ -106,14 +106,15 @@ static void dispatch(zval *obj)
     if(Z_TYPE_P(path_info) == IS_NULL)
     {
         //throw error here..
-        char *errorMsg = "path_infi error\n";
+        char *errorMsg = "path_info error\n";
         PHPWRITE(errorMsg, strlen(errorMsg));
         zval_ptr_dtor(&path_info);
         return ;
     }
     char *path_info_string;
     char *ptr;
-    char *token[4] = {NULL, NULL, NULL, NULL};
+    //char *token[4] = {NULL, NULL, NULL, NULL};
+    char *token[1024] = {0};
     char *delim = "/";
     char *jt = NULL;
     int offset = 1;
@@ -127,40 +128,52 @@ static void dispatch(zval *obj)
             offset++;
         }
     }
+
+    if(offset < 2)
+    {
+        char *errorMsg = "Path info rule error\n";
+        PHPWRITE(errorMsg, strlen(errorMsg));
+        zval_ptr_dtor(&path_info);
+        efree(path_info_string);
+        return ;
+    }
+
+    char tmp_interface_path[1024] = {0};
+    char *t_interface_path;
+    t_interface_path = tmp_interface_path;
+
+    int module_levels = 0;
+    for(;module_levels < offset -2; module_levels++)
+    {
+        strcpy(t_interface_path, token[module_levels]);
+        t_interface_path += strlen(token[module_levels]);
+        strcpy(t_interface_path, "/");
+        t_interface_path +=1;
+    }
+    
     char *base_module;
     char *module;
     char *controller;
     char *action;
     char *interface_path;
-    
-    LPS(token[0], base_module);
-    LPS(token[1], module)
-    LPS(token[2], controller)
-    LPS(token[3], action)
-    spprintf(&interface_path, 0, "%s/%s", base_module, module);
 
-    zval *z_base_module;
-    zval *z_module;
+    LPS(token[offset-2], controller)
+    LPS(token[offset-1], action)
+    spprintf(&interface_path, 0, "%s", tmp_interface_path);
     zval *z_controller;
     zval *z_action;
     zval *z_interface_path;
 
-    MAKE_STD_ZVAL(z_base_module);
-    MAKE_STD_ZVAL(z_module);
     MAKE_STD_ZVAL(z_controller);
     MAKE_STD_ZVAL(z_action);
     MAKE_STD_ZVAL(z_interface_path);
 
-    ZVAL_STRING(z_base_module, base_module, 1);
-    ZVAL_STRING(z_module, module, 1);
     ZVAL_STRING(z_controller, controller, 1);
     ZVAL_STRING(z_action, action, 1);
     ZVAL_STRING(z_interface_path, interface_path, 1);
 
     zval *dispatchInfo;
     dispatchInfo = zend_read_property(edge_router_ce, obj, ZEND_STRL("dispatchInfo"), 1 TSRMLS_DC);
-    zend_hash_update(Z_ARRVAL_P(dispatchInfo), "base_module", strlen("baseModule")+1, (void **)&z_base_module, sizeof(zval *), NULL);
-    zend_hash_update(Z_ARRVAL_P(dispatchInfo), "module", strlen("module")+1, (void **)&z_module, sizeof(zval *), NULL);
     zend_hash_update(Z_ARRVAL_P(dispatchInfo), "controller", strlen("controller")+1, (void **)&z_controller, sizeof(zval *), NULL);
     zend_hash_update(Z_ARRVAL_P(dispatchInfo), "action", strlen("action")+1, (void **)&z_action, sizeof(zval *), NULL);
     zend_hash_update(Z_ARRVAL_P(dispatchInfo), "interface_path", strlen("interface_path")+1, (void **)&z_interface_path, sizeof(zval *), NULL);
@@ -168,8 +181,6 @@ static void dispatch(zval *obj)
     set_base_home(interface_path);
     zval_ptr_dtor(&path_info);
     efree(interface_path);
-    efree(base_module);
-    efree(module);
     efree(controller);
     efree(action);
     efree(path_info_string);
