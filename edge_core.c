@@ -221,7 +221,15 @@ PHP_METHOD(Edge_Core, bootstrap)
         MAKE_STD_ZVAL(func_name);
         ZVAL_STRINGL(func_name, method_lowercase_name, method_len, 1);
         zend_call_method(&controller_ce, *ce, NULL, method_lowercase_name, method_len, &action_ret, 0, NULL, NULL TSRMLS_CC);
-
+        
+        if (EG(exception)) {
+            zval_ptr_dtor(&func_name);
+            efree(method_name);
+            efree(method_lowercase_name);
+            zval_ptr_dtor(&controller_ce);
+            RETURN_FALSE;
+        }
+        
         zval_ptr_dtor(&func_name);
     }
     efree(method_name);
