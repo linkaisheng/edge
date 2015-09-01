@@ -56,14 +56,12 @@ PHP_METHOD(Edge_Core, __construct)
     spprintf(&EDGE_G(config_path), 0, "%s", config_path);
     
     //initialize config 
-    
     zval *_config;
     _config = get_config_instance(EDGE_G(config_path) TSRMLS_CC);
     zend_update_static_property(edge_core_ce, ZEND_STRL("config"), _config);
     zval_ptr_dtor(&_config); 
       
     //initialize router
-    
      zval *_router;
     _router = get_router_instance();
     zend_update_static_property(edge_core_ce, ZEND_STRL("router"), _router);
@@ -214,6 +212,17 @@ PHP_METHOD(Edge_Core, bootstrap)
         RETURN_FALSE;
     }else
     {
+
+        //call the __construct function if exist
+        zval **cfptr;
+        if(zend_hash_find(&((*ce)->function_table), "__construct", strlen("__construct")+1, (void **)&cfptr) == SUCCESS)
+        {
+            zval *cretval;
+            zend_call_method(&controller_ce, *ce, NULL, "__construct", strlen("__construct"), &cretval, 0, NULL, NULL TSRMLS_CC);
+            zval_ptr_dtor(&cretval);
+        }
+
+
         uint count = 0;
         zval ***call_args = NULL;
 
