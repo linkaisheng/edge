@@ -50,14 +50,16 @@ int static edge_register_autoload(zval *loader, const char *fname)
 
     if(zend_call_function(&fci, NULL TSRMLS_CC) == FAILURE)
     {
-        if(ret){
+        if(ret)
+        {
             zval_ptr_dtor(&ret);
         }
         zval_ptr_dtor(&z_function);   
         zval_ptr_dtor(&arg);
         return 0;
     }
-    if(ret){
+    if(ret)
+    {
         zval_ptr_dtor(&ret);
     }
     Z_ADDREF_P(loader);
@@ -85,7 +87,8 @@ int  edge_file_include(char *file_path)
     {
         int dummy = 1;
 
-        if (!file_handle.opened_path) {
+        if (!file_handle.opened_path)
+        {
             file_handle.opened_path = file_path;
         }   
 
@@ -102,15 +105,18 @@ int  edge_file_include(char *file_path)
         EG(return_value_ptr_ptr) = &result;
         EG(active_op_array)      = op_array;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION > 2)) || (PHP_MAJOR_VERSION > 5)
-        if (!EG(active_symbol_table)) {
+        if (!EG(active_symbol_table)) 
+        {
             zend_rebuild_symbol_table(TSRMLS_C);
         }
 #endif
         zend_execute(op_array TSRMLS_CC);
         destroy_op_array(op_array TSRMLS_CC);
         efree(op_array);
-        if (!EG(exception)) {
-            if (EG(return_value_ptr_ptr) && *EG(return_value_ptr_ptr)) {
+        if (!EG(exception)) 
+        {
+            if (EG(return_value_ptr_ptr) && *EG(return_value_ptr_ptr)) 
+            {
                 zval_ptr_dtor(EG(return_value_ptr_ptr));
             }
         }
@@ -141,7 +147,8 @@ PHP_METHOD(Edge_Loader, __construct)
     char *lib_prefix;
     int lb_len = 0;
     int lp_len = 0;
-    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ss", &lib_path, &lb_len, &lib_prefix, &lp_len) == FAILURE){
+    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ss", &lib_path, &lb_len, &lib_prefix, &lp_len) == FAILURE)
+    {
         return;
     }
     if(lb_len != 0)
@@ -169,7 +176,8 @@ PHP_METHOD(Edge_Loader, autoload)
     int cnlen;
     int drlen;
     
-    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &class_name, &cnlen, &dir, &drlen) == FAILURE){
+    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &class_name, &cnlen, &dir, &drlen) == FAILURE)
+    {
         printf("autoload get class name error\n");
         return;
     }
@@ -180,14 +188,17 @@ PHP_METHOD(Edge_Loader, autoload)
     if(dir == NULL)
     {
         _home_path = estrdup("IfLib/");
-    }else{
+    }else
+    {
         _home_path = estrdup(dir);
     }
 
-    if(!strncmp(class_name, "If", 2)){
+    if(!strncmp(class_name, "If", 2))
+    {
         strtok(class_name, delim);
         file = strtok(NULL, delim);
-    }else{
+    }else
+    {
         class_name[0] = toupper(class_name[0]);
         file = class_name;
     }

@@ -158,7 +158,8 @@ PHP_METHOD(Edge_Core, bootstrap)
     efree(controller_file);
     zval_ptr_dtor(&z_controller_file);
 
-    if(!Z_BVAL_P(ret)){
+    if(!Z_BVAL_P(ret))
+    {
         char *errorMsg = "Request path error\n";
         PHPWRITE(errorMsg, strlen(errorMsg));
         zval_ptr_dtor(&ret);
@@ -172,7 +173,8 @@ PHP_METHOD(Edge_Core, bootstrap)
     int class_len;
     class_len = spprintf(&class_name, 0, "%s%s", Z_STRVAL_PP(_controller), "controller");
     class_lowercase = zend_str_tolower_dup(class_name, class_len);
-    if(zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) == FAILURE || !ce){
+    if(zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) == FAILURE || !ce)
+    {
         //throw error with controller error
         char *errorMsg = "Can't find effective controller class name\n";
         PHPWRITE(errorMsg, strlen(errorMsg));
@@ -222,7 +224,6 @@ PHP_METHOD(Edge_Core, bootstrap)
             zval_ptr_dtor(&cretval);
         }
 
-
         uint count = 0;
         zval ***call_args = NULL;
 
@@ -231,7 +232,8 @@ PHP_METHOD(Edge_Core, bootstrap)
         ZVAL_STRINGL(func_name, method_lowercase_name, method_len, 1);
         zend_call_method(&controller_ce, *ce, NULL, method_lowercase_name, method_len, &action_ret, 0, NULL, NULL TSRMLS_CC);
         
-        if (EG(exception)) {
+        if (EG(exception)) 
+        {
             zval_ptr_dtor(&func_name);
             efree(method_name);
             efree(method_lowercase_name);

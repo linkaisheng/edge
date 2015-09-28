@@ -10,8 +10,8 @@ static void edge_config_persistent(zval *filename, zval *obj TSRMLS_DC);
 static void edge_config_by_persistent(zval *filename, zval *obj TSRMLS_DC);
 static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC);
 
-static zval * yaf_config_ini_zval_losable(zval *zvalue TSRMLS_DC);
-static void yaf_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC);
+static zval * edge_config_ini_zval_losable(zval *zvalue TSRMLS_DC);
+static void edge_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC);
 
 zval *edge_ini_array_copy(zval *zv TSRMLS_DC);
 zval *edge_parse_ini_file(zval *zv);

@@ -45,7 +45,8 @@ zval * edge_request_query(int type, char *name)
     }
     if(rdata)
     {
-       if( zend_hash_find(Z_ARRVAL_PP(rdata), name, len+1, (void **)&ppzval) == FAILURE){
+       if( zend_hash_find(Z_ARRVAL_PP(rdata), name, len+1, (void **)&ppzval) == FAILURE)
+       {
            zval *empty;
            MAKE_STD_ZVAL(empty);
            ZVAL_NULL(empty);

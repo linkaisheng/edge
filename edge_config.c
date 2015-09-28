@@ -86,7 +86,8 @@ static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC)
             {
                 zend_hash_index_update(dst, idx, (void **)&tmp, sizeof(zval *), NULL);
             }
-        }else{
+        }else
+        {
             zval *tmp;
             if(zend_hash_get_current_data(src, (void **)&ppzval) == FAILURE)
             {
@@ -105,7 +106,8 @@ static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC)
 
 }
 
-static void edge_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC) {
+static void edge_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC) 
+{
 	zval **ppzval, *tmp;
 	char *key;
 	ulong idx;
@@ -197,10 +199,12 @@ static void edge_config_by_persistent(zval *filename, zval *obj TSRMLS_DC)
                 array_init(props);
                 edge_config_copy_losable(Z_ARRVAL_P(props), (*config_cache)->config TSRMLS_CC);
                 add_property_zval_ex(obj, ZEND_STRS("_data"), props);
-            }else{
+            }else
+            {
                 edge_config_persistent(filename, obj TSRMLS_CC);
             }
-        }else{
+        }else
+        {
             edge_config_persistent(filename, obj TSRMLS_CC);
         }
         efree(key);
@@ -228,7 +232,8 @@ zval *edge_ini_array_copy(zval *zv TSRMLS_DC)
             {   
                 HashTable *tmp_ht, *local_ht = zv->value.ht;
                 tmp_ht = (HashTable *) pemalloc (sizeof(HashTable), 1); 
-                if(!tmp_ht){
+                if(!tmp_ht)
+                {
                     return; 
                 } 
 
@@ -245,7 +250,8 @@ zval *edge_ini_array_copy(zval *zv TSRMLS_DC)
 static zval * edge_config_ini_zval_losable(zval *zvalue TSRMLS_DC) {
 	zval *ret;
 	MAKE_STD_ZVAL(ret);
-	switch (zvalue->type) {
+	switch (zvalue->type)
+    {
 		case IS_RESOURCE:
 		case IS_OBJECT:
 			break;
@@ -308,7 +314,8 @@ zval * get_config_instance(char *config_path TSRMLS_DC)
         if(!EDGE_G(configs))
         {   
             edge_config_persistent(zconfig, config_instance TSRMLS_CC);
-        }else{
+        }else
+        {
             edge_config_by_persistent(zconfig, config_instance TSRMLS_CC);
         } 
     }  

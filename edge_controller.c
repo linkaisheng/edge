@@ -38,6 +38,7 @@ zend_function_entry edge_controller_methods[] = {
 
 PHP_METHOD(Edge_Controller, __construct)
 {
+    /*
     zval *config;
     zval *config_data;
     zval **ppval;
@@ -50,6 +51,7 @@ PHP_METHOD(Edge_Controller, __construct)
     }
     PHPWRITE(Z_STRVAL_PP(ppval), Z_STRLEN_PP(ppval));
     zend_declare_property_string(edge_controller_ce, ZEND_STRL("_models_home"), Z_STRVAL_PP(ppval), ZEND_ACC_PUBLIC TSRMLS_DC);
+    */
 }
 
 PHP_METHOD(Edge_Controller, get)
@@ -64,7 +66,8 @@ PHP_METHOD(Edge_Controller, get)
     data = edge_request_query(EDGE_REQUEST_VARS_GET, name);
     if(Z_TYPE_P(data) == IS_NULL && nlen != 0)
     {
-        if(strncmp("model", name, nlen) == 0){
+        if(strncmp("model", name, nlen) == 0)
+        {
             zval *arg;
             zval *ret;
 
@@ -91,9 +94,11 @@ PHP_METHOD(Edge_Controller, get)
             efree(controller_prefix);
             zval_ptr_dtor(&data);
             RETURN_ZVAL(ret, 1, 1);
-        }else if(strncmp("response", name, nlen) == 0){
+        }else if(strncmp("response", name, nlen) == 0)
+        {
 
-        }else if(strncmp("login", name, nlen) == 0){
+        }else if(strncmp("login", name, nlen) == 0)
+        {
         
         }
 
@@ -253,7 +258,7 @@ PHP_METHOD(Edge_Controller, result)
     int mlen;
     long code;
 
-    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|as", &code, &data, &msg, &mlen) == FAILURE)
+    if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|zs", &code, &data, &msg, &mlen) == FAILURE)
     {
         RETURN_FALSE;
     }

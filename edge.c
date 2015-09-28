@@ -96,7 +96,6 @@ PHP_RINIT_FUNCTION(edge)
 */
 PHP_RSHUTDOWN_FUNCTION(edge)
 {
-    
     if (EDGE_G(root_path)){
         efree(EDGE_G(root_path));
     }
