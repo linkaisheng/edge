@@ -25,29 +25,24 @@ extern zend_module_entry edge_module_entry;
 #define EDGE_G(v) (edge_globals.v)
 #endif
 
-#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 3)) || (PHP_MAJOR_VERSION > 5)
-#define Z_ADDREF_P   ZVAL_ADDREF
-#endif
-
 #define EDGE_STARTUP_FUNCTION(module)       ZEND_MINIT_FUNCTION(edge_##module)
 #define EDGE_STARTUP(module)                ZEND_MODULE_STARTUP_N(edge_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
-PHP_MINIT_FUNCTION(edge);
 ZEND_BEGIN_MODULE_GLOBALS(edge)
     HashTable *configs;
     zval *cacheData;
-    zval *regs;
+    zval regs;
     char *root_path;
     char *config_path;
 ZEND_END_MODULE_GLOBALS(edge)
-extern ZEND_DECLARE_MODULE_GLOBALS(edge);
 
-
+PHP_MINIT_FUNCTION(edge);
 PHP_MSHUTDOWN_FUNCTION(edge);
 PHP_RINIT_FUNCTION(edge);
 PHP_RSHUTDOWN_FUNCTION(edge);
 PHP_MINFO_FUNCTION(edge);
 
+extern ZEND_DECLARE_MODULE_GLOBALS(edge);
 
 
 

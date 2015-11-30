@@ -5,18 +5,11 @@ typedef struct _edge_config_cache{
     HashTable *config;
 } edge_config_cache;
 
-static int edge_init_modify(zval *filename, long ctime TSRMLS_DC);
-static void edge_config_persistent(zval *filename, zval *obj TSRMLS_DC);
-static void edge_config_by_persistent(zval *filename, zval *obj TSRMLS_DC);
-static void edge_config_copy(HashTable *dst, HashTable *src TSRMLS_DC);
+static int edge_init_modify(zval *filename, long ctime);
+static void edge_config_persistent(zval *filename, zval *obj);
 
-static zval * edge_config_ini_zval_losable(zval *zvalue TSRMLS_DC);
-static void edge_config_copy_losable(HashTable *ldst, HashTable *src TSRMLS_DC);
-
-zval *edge_ini_array_copy(zval *zv TSRMLS_DC);
-zval *edge_parse_ini_file(zval *zv);
-//zval *get_config_instance(zval *obj);
-zval *get_config_instance(char *config_path TSRMLS_DC);
+zval edge_parse_ini_file(zval *zval);
+zval *get_config_instance(zval *config,const char *config_path);
 
 PHP_METHOD(Edge_Config, __construct);
 PHP_METHOD(Edge_Config, get);

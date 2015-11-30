@@ -17,7 +17,17 @@ PHP_ARG_ENABLE(edge, whether to enable edge support,
 Make sure that the comment is aligned:
 [  --enable-edge           Enable edge support])
 
+AC_ARG_ENABLE(edge-cli,
+[  --enable-edge-cli     Enable edge-cli mode default=no],
+[EDGE_CLI=$enableval],
+[EDGE_CLI="no"])  
+
 if test "$PHP_EDGE" != "no"; then
+  if test "$EDGE_CLI" = "yes"; then
+      AC_DEFINE(EDGE_CLI,1,[define to 1 if you want to change the POST/GET by php script])
+  else 
+      AC_DEFINE(EDGE_CLI,0,[define to 0 if you want to change the POST/GET by php script])
+  fi
   dnl Write more examples of tests here...
 
   dnl # --with-edge -> check with-path
@@ -49,15 +59,15 @@ if test "$PHP_EDGE" != "no"; then
 
   dnl PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
   dnl [
-  dnl   PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $EDGE_DIR/lib, EDGE_SHARED_LIBADD)
+  dnl   PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $EDGE_DIR/$PHP_LIBDIR, EDGE_SHARED_LIBADD)
   dnl   AC_DEFINE(HAVE_EDGELIB,1,[ ])
   dnl ],[
   dnl   AC_MSG_ERROR([wrong edge lib version or lib not found])
   dnl ],[
-  dnl   -L$EDGE_DIR/lib -lm
+  dnl   -L$EDGE_DIR/$PHP_LIBDIR -lm
   dnl ])
   dnl
   dnl PHP_SUBST(EDGE_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(edge, edge.c edge_config.c edge_router.c edge_request.c edge_loader.c edge_core.c edge_controller.c, $ext_shared)
+  PHP_NEW_EXTENSION(edge, edge.c edge_config.c edge_core.c edge_router.c edge_loader.c edge_controller.c, $ext_shared)
 fi

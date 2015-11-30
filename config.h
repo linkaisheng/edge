@@ -4,6 +4,9 @@
 /* Whether to build edge as dynamic module */
 #define COMPILE_DL_EDGE 1
 
+/* define to 0 if you want to change the POST/GET by php script */
+#define EDGE_CLI 0
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 

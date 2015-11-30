@@ -10,7 +10,7 @@
 #include "ext/standard/info.h"
 #include "php_edge.h"
 
-#include "edge_config.h"
+//#include "edge_config.h"
 
 
 ZEND_DECLARE_MODULE_GLOBALS(edge)
@@ -57,7 +57,6 @@ PHP_MINIT_FUNCTION(edge)
 {
 	EDGE_STARTUP(config);
     EDGE_STARTUP(router);
-    EDGE_STARTUP(request);
     EDGE_STARTUP(loader);
     EDGE_STARTUP(controller);
     EDGE_STARTUP(core);
@@ -85,8 +84,8 @@ PHP_RINIT_FUNCTION(edge)
 {
     EDGE_G(root_path) = NULL;
     EDGE_G(config_path) = NULL;
-    MAKE_STD_ZVAL(EDGE_G(regs));
-    array_init(EDGE_G(regs));
+   
+    array_init(&EDGE_G(regs));
     return SUCCESS;
 }
 /* }}} */
@@ -103,8 +102,11 @@ PHP_RSHUTDOWN_FUNCTION(edge)
     if (EDGE_G(config_path)){
         efree(EDGE_G(config_path));
     }
+    
+    if (!Z_ISUNDEF(EDGE_G(regs))) {
+        zval_ptr_dtor(&EDGE_G(regs));
+    }
 
-    zval_ptr_dtor(&EDGE_G(regs));
     return SUCCESS;
 }
 /* }}} */

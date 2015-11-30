@@ -19,6 +19,10 @@
 #define EDGE_REQUEST_CONTROLLER "controller"
 #define EDGE_REQUEST_ACTION "action"
 
+#define EDGE_MODLE_HOME "_models_home"
+#define EDGE_CONTROLLER_HOME "_controllers_home"
+#define EDGE_VIEW_HOME "_views_home"
+
 #define LPS(token, op)                  \
     if(token == NULL){                  \
         spprintf(&op, 0, "%s", "index");  \
@@ -32,13 +36,11 @@
 
 extern zend_class_entry *edge_router_ce;
 
-
-EDGE_STARTUP_FUNCTION(router);
-
 PHP_METHOD(Edge_Router, __construct);
 zval * edge_request_query(int type, char *name);
-zval * get_router_instance();
+zval * get_router_instance(zval *router_instance);
 static void set_base_home(const char *interface_path);
 static void dispatch(zval *obj);
 static void init_ce(zval *obj);
 
+EDGE_STARTUP_FUNCTION(router);
