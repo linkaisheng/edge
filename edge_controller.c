@@ -66,6 +66,7 @@ PHP_METHOD(Edge_Controller, get)
     data = edge_request_query(EDGE_REQUEST_VARS_GET, name);
     if(Z_TYPE_P(data) == IS_NULL && nlen != 0)
     {
+        zval_ptr_dtor(&data);
         if(strncmp("model", name, nlen) == 0)
         {
             zval *arg;
@@ -92,14 +93,23 @@ PHP_METHOD(Edge_Controller, get)
             }
 
             efree(controller_prefix);
-            zval_ptr_dtor(&data);
             RETURN_ZVAL(ret, 1, 1);
-        }else if(strncmp("response", name, nlen) == 0)
+        } else 
         {
+            char *mg_class_name = NULL;
+            name[0] = toupper(name[0]);
+            int mg_class_len = spprintf(&mg_class_name, 0, "If_%s", name);
 
-        }else if(strncmp("login", name, nlen) == 0)
-        {
-        
+            zend_class_entry **mg_ce;
+            if(zend_lookup_class(mg_class_name, mg_class_len, &mg_ce TSRMLS_CC) == FAILURE)
+            {
+                RETURN_FALSE; 
+            }
+            
+            zval *mg_obj;
+            MAKE_STD_ZVAL(mg_obj);
+            object_init_ex(mg_obj, *mg_ce);
+            RETURN_ZVAL(mg_obj, 1, 1);
         }
 
     }
@@ -109,9 +119,18 @@ PHP_METHOD(Edge_Controller, get)
 PHP_METHOD(Edge_Controller, check_login)
 {
     zval *chktype, *uin, *key;
+    int had_params = 1;
     if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zzz", &chktype, &uin, &key) == FAILURE)
     {
-        RETURN_FALSE;
+        MAKE_STD_ZVAL(chktype);
+        MAKE_STD_ZVAL(uin);
+        MAKE_STD_ZVAL(key);
+
+        ZVAL_NULL(chktype);
+        ZVAL_NULL(uin);
+        ZVAL_NULL(key);
+        had_params = 0;
+        //RETURN_FALSE;
     }
 
     zend_class_entry **login_ce;
@@ -143,6 +162,19 @@ PHP_METHOD(Edge_Controller, check_login)
     
     zval_ptr_dtor(&function_name);
     zval_ptr_dtor(&login_obj);
+   
+    if(had_params == 0) {
+        zval_ptr_dtor(&chktype);
+        zval_ptr_dtor(&uin);
+        zval_ptr_dtor(&key);
+    }
+
+    RETURN_ZVAL(ret, 1, 1);
+    /*
+    if(Z_TYPE_P(ret) == IS_BOOL) 
+    {
+        RETURN_FALSE;
+    }
 
     zval *fret;
     MAKE_STD_ZVAL(fret);
@@ -151,6 +183,7 @@ PHP_METHOD(Edge_Controller, check_login)
     array_init(return_value);
     add_assoc_string(return_value, "nickname", Z_STRVAL_P(fret), 1);
     zval_ptr_dtor(&fret);
+    */
 }
 
 
@@ -211,13 +244,10 @@ PHP_METHOD(Edge_Controller, model)
     zval_ptr_dtor(&z_model_name);
     if(!Z_BVAL_P(ret))
     {
-        char *errorMsg;
-        int errorMsgLen;
-        errorMsgLen = spprintf(&errorMsg, 0, "[ERROR]model %s%s load error\n", Z_STRVAL_PP(models_home_pp), model_class_name);
-        PHPWRITE(errorMsg, errorMsgLen);
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "model %s%s load fail", Z_STRVAL_PP(models_home_pp), model_class_name);
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "model %s%s load fail", Z_STRVAL_PP(models_home_pp), model_class_name);
         zval_ptr_dtor(&ret);
         efree(model_class_name);
-        efree(errorMsg);
         RETURN_FALSE;
     }
     zval_ptr_dtor(&ret);
@@ -225,10 +255,8 @@ PHP_METHOD(Edge_Controller, model)
     zend_class_entry **model_ce;
     if(zend_lookup_class(model_class_name, class_name_len, &model_ce TSRMLS_CC) == FAILURE)
     {
-        char *errorMsg;
-        int errorMsgLen;
-        errorMsgLen = spprintf(&errorMsg, 0, "[ERROR]Model class %s does not exist\n", model_class_name);
-        PHPWRITE(errorMsg, errorMsgLen);
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "model class %s not exist", model_class_name);
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "model class %s%s  not exist", model_class_name);
         efree(model_class_name);
         RETURN_FALSE;
     }

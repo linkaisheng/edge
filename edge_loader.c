@@ -65,9 +65,6 @@ int static edge_register_autoload(zval *loader, const char *fname)
     Z_ADDREF_P(loader);
     efree(z_function);   
     zval_ptr_dtor(&arg);
-    /*
-    //do some test...
-    */
     return 1;
 }
 
@@ -134,8 +131,7 @@ zval * get_loader_instance()
     object_init_ex(loader_instance, edge_loader_ce);
     if(!edge_register_autoload(loader_instance, "autoload"))
     {
-        //throw auto load function register error in here..
-        printf("autoload function error");
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to register auto loader function");
     }
 
     return loader_instance;
@@ -164,7 +160,7 @@ PHP_METHOD(Edge_Loader, __construct)
     if(!edge_register_autoload(getThis(), "autoload"))
     {
         //throw auto load function register error in here..
-        printf("autoload function error");
+        php_errir_docref(NULL TSRMLS_CC, E_WARNING, "Unable to register auto loader function");
     }
 
 }
@@ -184,16 +180,24 @@ PHP_METHOD(Edge_Loader, autoload)
     char *_home_path = NULL;
     char *file;
     char *delim = "_";
-    
+   
     if(dir == NULL)
     {
-        _home_path = estrdup("IfLib/");
+        char *lib_path = "LIB_PATH";
+        int lib_path_len = strlen(lib_path);
+        zval c;
+        if (zend_get_constant_ex(lib_path, lib_path_len, &c, NULL, ZEND_FETCH_CLASS_SILENT TSRMLS_CC)) {
+            _home_path = estrdup(Z_STRVAL(c));
+            zval_dtor(&c);
+        } else {
+            _home_path = estrdup("IfLib/");
+        }
     }else
     {
         _home_path = estrdup(dir);
     }
 
-    if(!strncmp(class_name, "If", 2))
+    if(!strncmp(class_name, "If", 2) || !strncmp(class_name, "IF", 2))
     {
         strtok(class_name, delim);
         file = strtok(NULL, delim);
@@ -244,7 +248,6 @@ PHP_METHOD(Edge_Loader, autoload)
         ZVAL_FALSE(ret);
         RETURN_ZVAL(ret, 1, 1);
     }
-
     if(!edge_file_include(include_file_path))
     {
         efree(_home_path);

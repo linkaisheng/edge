@@ -107,9 +107,9 @@ static void dispatch(zval *obj)
     if(Z_TYPE_P(path_info) == IS_NULL)
     {
         //throw error here..
-        char *errorMsg = "path_info error\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
         zval_ptr_dtor(&path_info);
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "path info error");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "path info error");
         return ;
     }
     char *path_info_string;
@@ -132,8 +132,8 @@ static void dispatch(zval *obj)
 
     if(offset < 2)
     {
-        char *errorMsg = "Path info rule error\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "path info rule error");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "path info rule error");
         zval_ptr_dtor(&path_info);
         efree(path_info_string);
         return ;

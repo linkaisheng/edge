@@ -5,6 +5,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "Zend/zend_interfaces.h" 
+#include "zend_exceptions.h"
 #include "php_edge.h"
 #include "edge_config.h"
 #include "edge_router.h"
@@ -132,7 +133,6 @@ PHP_METHOD(Edge_Core, bootstrap)
     cht = Z_ARRVAL_P(config_data);
     if(zend_hash_find(Z_ARRVAL_P(config_data), "_controllers_home", strlen("_controllers_home")+1, (void **)&ppzval) == FAILURE)
     {
-        //throw error with controller_home error
         RETURN_FALSE;
     }
     zval *dispathInfo;
@@ -140,7 +140,6 @@ PHP_METHOD(Edge_Core, bootstrap)
     dispathInfo = zend_read_property(edge_router_ce, _router, ZEND_STRL("dispatchInfo"), 1 TSRMLS_DC);
     if(zend_hash_find(Z_ARRVAL_P(dispathInfo), "controller", strlen("controller")+1, (void **)&_controller) == FAILURE)
     {
-        //throw error with controller error
         RETURN_FALSE;
     }
     Z_STRVAL_PP(_controller)[0] = toupper(Z_STRVAL_PP(_controller)[0]);
@@ -160,8 +159,8 @@ PHP_METHOD(Edge_Core, bootstrap)
 
     if(!Z_BVAL_P(ret))
     {
-        char *errorMsg = "Request path error\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Request path error");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Request path error");
         zval_ptr_dtor(&ret);
         RETURN_FALSE;
     }
@@ -176,8 +175,8 @@ PHP_METHOD(Edge_Core, bootstrap)
     if(zend_hash_find(EG(class_table), class_lowercase, class_len + 1, (void **)&ce) == FAILURE || !ce)
     {
         //throw error with controller error
-        char *errorMsg = "Can't find effective controller class name\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can't find effective controller class name");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Can't find effective controller class name");
         efree(class_name);
         efree(class_lowercase);
         RETURN_FALSE;
@@ -196,8 +195,8 @@ PHP_METHOD(Edge_Core, bootstrap)
     int method_len;
     if(zend_hash_find(Z_ARRVAL_P(dispathInfo), "action", strlen("action")+1, (void **)&_action) == FAILURE)
     {
-        char *errorMsg = "Internal error,action path error\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find the action function");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Unable to find the action function");
         zval_ptr_dtor(&controller_ce);
         RETURN_FALSE;
     }
@@ -206,8 +205,8 @@ PHP_METHOD(Edge_Core, bootstrap)
 
     if(zend_hash_find(&((*ce)->function_table), method_lowercase_name, method_len+1, (void **)&mfptr) == FAILURE)
     {
-        char *errorMsg = "Can't find effective action name\n";
-        PHPWRITE(errorMsg, strlen(errorMsg));
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can't find effective action name");
+        zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Can't find effective action name");
         zval_ptr_dtor(&controller_ce);
         efree(method_name);
         efree(method_lowercase_name);
